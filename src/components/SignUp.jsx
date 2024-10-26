@@ -22,7 +22,7 @@ function SignUp() {
         password,
       });
       alert('Sign-up successful! Please sign in.');
-      navigate('/signin'); // Redirect to the sign-in page
+      navigate('/signin'); 
     } catch (err) {
       setError(err.response?.data?.message || 'Error signing up. Please try again.');
     } finally {

@@ -109,16 +109,14 @@ function OrganizationForm({ selectedOrg, setShowForm, refreshOrganizations }) {
   const [memberInput, setMemberInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Set initial values for edit mode
   useEffect(() => {
     if (selectedOrg) {
       setName(selectedOrg.name);
       setDescription(selectedOrg.description);
-      setMembers(selectedOrg.members || []); // Only used for display if editing
+      setMembers(selectedOrg.members || []); 
     }
   }, [selectedOrg]);
 
-  // Add a member with default access level 'reader'
   const handleAddMember = () => {
     if (memberInput && !members.some((member) => member.email === memberInput)) {
       setMembers([...members, { email: memberInput, access_level: 'reader' }]);
@@ -126,7 +124,6 @@ function OrganizationForm({ selectedOrg, setShowForm, refreshOrganizations }) {
     }
   };
 
-  // Remove a member from the list
   const handleRemoveMember = (member) => {
     setMembers(members.filter((m) => m.email !== member.email));
   };
@@ -138,7 +135,6 @@ function OrganizationForm({ selectedOrg, setShowForm, refreshOrganizations }) {
 
     try {
       if (selectedOrg) {
-        // Update organization (only name and description)
         await axios.put(
           `${API_URL}/organization/${selectedOrg.organization_id}`,
           { name, description },
@@ -151,7 +147,6 @@ function OrganizationForm({ selectedOrg, setShowForm, refreshOrganizations }) {
         );
         alert('Organization updated successfully!');
       } else {
-        // Create a new organization (with members)
         await axios.post(
           `${API_URL}/organization`,
           { name, description, organization_members: members },
@@ -164,8 +159,8 @@ function OrganizationForm({ selectedOrg, setShowForm, refreshOrganizations }) {
         );
         alert('Organization created successfully!');
       }
-      setShowForm(false); // Close form after submission
-      refreshOrganizations(); // Refresh list
+      setShowForm(false);
+      refreshOrganizations(); 
     } catch (error) {
       console.error('Error submitting organization:', error);
       alert('Error submitting organization');
