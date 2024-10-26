@@ -1,5 +1,3 @@
-// src/components/OrganizationDashboard.js
-
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
@@ -36,6 +34,20 @@ function OrganizationDashboard() {
     setShowForm(true);
   };
 
+  const handleDelete = async (orgId) => {
+    const authToken = localStorage.getItem('authToken');
+    try {
+      await axios.delete(`${API_URL}/organization/${orgId}`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      alert('Organization deleted successfully!');
+      fetchOrganizations();
+    } catch (error) {
+      console.error('Error deleting organization:', error);
+      alert('Failed to delete organization');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Organization Dashboard</h2>
@@ -53,12 +65,25 @@ function OrganizationDashboard() {
             <div key={org.organization_id} className="p-4 bg-white rounded-lg shadow-md">
               <h3 className="text-xl font-bold text-gray-900">{org.org}</h3>
               <p className="text-gray-700">{org.description}</p>
-              <p className="text-gray-500">Members: {org.members?.join(', ') || 'No members'}</p>
+              <p className="text-gray-500">Members: 
+                <p>
+                  {org.organization_members.map((member) => (
+                    <span key={member.email} className="text-grey-80">{member.email} </span>
+                  ))}
+                </p>
+
+              </p>
               <button
                 onClick={() => handleEdit(org)}
                 className="mt-4 text-indigo-600 hover:underline"
               >
                 Edit
+              </button>
+              <button
+                onClick={() => handleDelete(org.organization_id)}
+                className="ml-4 text-red-500 hover:underline"
+              >
+                Delete
               </button>
             </div>
           ))
@@ -89,19 +114,21 @@ function OrganizationForm({ selectedOrg, setShowForm, refreshOrganizations }) {
     if (selectedOrg) {
       setName(selectedOrg.name);
       setDescription(selectedOrg.description);
-      setMembers(selectedOrg.members || []); // Only used for display
+      setMembers(selectedOrg.members || []); // Only used for display if editing
     }
   }, [selectedOrg]);
 
+  // Add a member with default access level 'reader'
   const handleAddMember = () => {
-    if (memberInput && !members.includes(memberInput)) {
-      setMembers([...members, memberInput]);
+    if (memberInput && !members.some((member) => member.email === memberInput)) {
+      setMembers([...members, { email: memberInput, access_level: 'reader' }]);
       setMemberInput('');
     }
   };
 
+  // Remove a member from the list
   const handleRemoveMember = (member) => {
-    setMembers(members.filter((m) => m !== member));
+    setMembers(members.filter((m) => m.email !== member.email));
   };
 
   const handleSubmit = async (e) => {
@@ -124,10 +151,10 @@ function OrganizationForm({ selectedOrg, setShowForm, refreshOrganizations }) {
         );
         alert('Organization updated successfully!');
       } else {
-        // Create a new organization (name, description, and members)
+        // Create a new organization (with members)
         await axios.post(
           `${API_URL}/organization`,
-          { name, description, members },
+          { name, description, organization_members: members },
           {
             headers: {
               Authorization: `Bearer ${authToken}`,
@@ -193,8 +220,10 @@ function OrganizationForm({ selectedOrg, setShowForm, refreshOrganizations }) {
               </div>
               <div className="mt-2 space-y-1">
                 {members.map((member) => (
-                  <div key={member} className="flex items-center justify-between">
-                    <span className="text-gray-700">{member}</span>
+                  <div key={member.email} className="flex items-center justify-between">
+                    <span className="text-gray-700">
+                      {member.email} ({member.access_level})
+                    </span>
                     <button
                       type="button"
                       onClick={() => handleRemoveMember(member)}
