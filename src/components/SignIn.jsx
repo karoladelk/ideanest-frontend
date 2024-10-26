@@ -18,8 +18,8 @@ function SignIn() {
 
     try {
       const response = await axios.post(`${API_URL}/auth/signin`, { email, password });
-      localStorage.setItem('authToken', response.data.access_token); // Store token if needed
-      navigate('/dashboard'); // Redirect to Organization Dashboard
+      localStorage.setItem('authToken', response.data.access_token);
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to sign in');
     } finally {
